@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Pill capsule body (bottom half) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M38.5,36.5 L69.5,67.5 C75.16,73.16 75.16,82.34 69.5,88 C63.84,93.66 54.66,93.66 49,88 L18,57 C12.34,51.34 12.34,42.16 18,36.5 C23.66,30.84 32.84,30.84 38.5,36.5Z" />
+
+    <!-- Pill capsule top half (colored) -->
+    <path
+        android:fillColor="#E8DEF8"
+        android:pathData="M69.5,36.5 L38.5,67.5 L49,78 C54.66,83.66 63.84,83.66 69.5,78 L90,57.5 C95.66,51.84 95.66,42.66 90,37 C84.34,31.34 75.16,30.84 69.5,36.5Z" />
+
+    <!-- Pill divider line -->
+    <path
+        android:fillColor="#6750A4"
+        android:pathData="M36.5,65.5 L42.5,71.5 L71.5,42.5 L65.5,36.5Z"
+        android:strokeWidth="0" />
+
+    <!-- Small plus/cross symbol -->
+    <path
+        android:fillColor="#6750A4"
+        android:pathData="M52,22 L56,22 L56,30 L52,30Z" />
+    <path
+        android:fillColor="#6750A4"
+        android:pathData="M48,26 L48,22 L60,22 L60,26Z"
+        android:strokeWidth="0" />
+
+</vector>
