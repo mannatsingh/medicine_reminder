@@ -34,7 +34,7 @@ class GoogleDriveBackupService @Inject constructor(
             GsonFactory.getDefaultInstance(),
             credential
         )
-            .setApplicationName("Medicine Reminder")
+            .setApplicationName("MedCheck")
             .build()
     }
 

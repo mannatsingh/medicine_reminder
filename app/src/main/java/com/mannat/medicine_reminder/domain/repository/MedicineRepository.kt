@@ -10,4 +10,5 @@ interface MedicineRepository {
     suspend fun addMedicine(medicine: Medicine): Long
     suspend fun updateMedicine(medicine: Medicine)
     suspend fun deleteMedicine(id: Long)
+    suspend fun permanentlyDeleteMedicine(id: Long)
 }

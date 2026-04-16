@@ -65,4 +65,9 @@ class MedicineRepositoryImpl @Inject constructor(
     override suspend fun deleteMedicine(id: Long) {
         medicineDao.softDeleteMedicine(id, Instant.now().toEpochMilli())
     }
+
+    override suspend fun permanentlyDeleteMedicine(id: Long) {
+        val entity = medicineDao.getMedicineById(id) ?: return
+        medicineDao.hardDeleteMedicine(entity)
+    }
 }

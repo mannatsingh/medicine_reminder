@@ -2,32 +2,44 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
+    android:viewportWidth="256"
+    android:viewportHeight="256">
 
-    <!-- Pill capsule body (bottom half) -->
+    <!-- Shield -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M38.5,36.5 L69.5,67.5 C75.16,73.16 75.16,82.34 69.5,88 C63.84,93.66 54.66,93.66 49,88 L18,57 C12.34,51.34 12.34,42.16 18,36.5 C23.66,30.84 32.84,30.84 38.5,36.5Z" />
+        android:pathData="M128,66 L181,93 C181,93 185,147 128,193 C71,147 75,93 75,93 Z" />
 
-    <!-- Pill capsule top half (colored) -->
+    <!-- Vertical capsule - full dark -->
     <path
-        android:fillColor="#E8DEF8"
-        android:pathData="M69.5,36.5 L38.5,67.5 L49,78 C54.66,83.66 63.84,83.66 69.5,78 L90,57.5 C95.66,51.84 95.66,42.66 90,37 C84.34,31.34 75.16,30.84 69.5,36.5Z" />
+        android:fillColor="#43A047"
+        android:pathData="M128,90 A10,10 0,0 1,138,100 L138,150 A10,10 0,0 1,128,160 A10,10 0,0 1,118,150 L118,100 A10,10 0,0 1,128,90 Z" />
 
-    <!-- Pill divider line -->
+    <!-- Vertical capsule - top half light -->
     <path
-        android:fillColor="#6750A4"
-        android:pathData="M36.5,65.5 L42.5,71.5 L71.5,42.5 L65.5,36.5Z"
-        android:strokeWidth="0" />
+        android:fillColor="#A5D6A7"
+        android:pathData="M128,90 A10,10 0,0 1,138,100 L138,125 L118,125 L118,100 A10,10 0,0 1,128,90 Z" />
 
-    <!-- Small plus/cross symbol -->
+    <!-- Vertical shine -->
     <path
-        android:fillColor="#6750A4"
-        android:pathData="M52,22 L56,22 L56,30 L52,30Z" />
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.2"
+        android:pathData="M123,93 A2,2 0,0 1,125,95 L125,155 A2,2 0,0 1,123,157 A2,2 0,0 1,121,155 L121,95 A2,2 0,0 1,123,93 Z" />
+
+    <!-- Horizontal capsule - full dark -->
     <path
-        android:fillColor="#6750A4"
-        android:pathData="M48,26 L48,22 L60,22 L60,26Z"
-        android:strokeWidth="0" />
+        android:fillColor="#66BB6A"
+        android:pathData="M100,115 L156,115 A10,10 0,0 1,166,125 A10,10 0,0 1,156,135 L100,135 A10,10 0,0 1,90,125 A10,10 0,0 1,100,115 Z" />
+
+    <!-- Horizontal capsule - left half light -->
+    <path
+        android:fillColor="#C8E6C9"
+        android:pathData="M100,115 L128,115 L128,135 L100,135 A10,10 0,0 1,90,125 A10,10 0,0 1,100,115 Z" />
+
+    <!-- Horizontal shine -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.2"
+        android:pathData="M95,118 L163,118 A2,2 0,0 1,165,120 A2,2 0,0 1,163,122 L95,122 A2,2 0,0 1,93,120 A2,2 0,0 1,95,118 Z" />
 
 </vector>

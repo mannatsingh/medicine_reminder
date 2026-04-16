@@ -7,6 +7,7 @@ import com.mannat.medicine_reminder.domain.model.DosageUnit
 import com.mannat.medicine_reminder.domain.model.Frequency
 import com.mannat.medicine_reminder.domain.model.Medicine
 import com.mannat.medicine_reminder.domain.model.Schedule
+import com.mannat.medicine_reminder.data.local.MedicineNameProvider
 import com.mannat.medicine_reminder.domain.usecase.medicine.AddMedicineUseCase
 import com.mannat.medicine_reminder.domain.usecase.medicine.GetMedicineByIdUseCase
 import com.mannat.medicine_reminder.domain.usecase.medicine.UpdateMedicineUseCase
@@ -66,13 +67,17 @@ class AddEditMedicineViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val addMedicineUseCase: AddMedicineUseCase,
     private val updateMedicineUseCase: UpdateMedicineUseCase,
-    private val getMedicineByIdUseCase: GetMedicineByIdUseCase
+    private val getMedicineByIdUseCase: GetMedicineByIdUseCase,
+    private val medicineNameProvider: MedicineNameProvider
 ) : ViewModel() {
 
     private val medicineId: Long? = savedStateHandle.get<Long>("medicineId")
 
     private val _uiState = MutableStateFlow(AddEditMedicineUiState())
     val uiState: StateFlow<AddEditMedicineUiState> = _uiState.asStateFlow()
+
+    private val _nameSuggestions = MutableStateFlow<List<String>>(emptyList())
+    val nameSuggestions: StateFlow<List<String>> = _nameSuggestions.asStateFlow()
 
     private val _events = MutableSharedFlow<AddEditMedicineEvent>()
     val events = _events.asSharedFlow()
@@ -109,6 +114,14 @@ class AddEditMedicineViewModel @Inject constructor(
 
     fun onNameChange(name: String) {
         _uiState.update { it.copy(name = name, nameError = null) }
+        viewModelScope.launch {
+            _nameSuggestions.value = medicineNameProvider.search(name)
+        }
+    }
+
+    fun onNameSuggestionSelected(name: String) {
+        _uiState.update { it.copy(name = name, nameError = null) }
+        _nameSuggestions.value = emptyList()
     }
 
     fun onDosageAmountChange(amount: String) {

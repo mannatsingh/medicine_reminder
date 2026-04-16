@@ -103,16 +103,38 @@ fun AddEditMedicineScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Name
-            OutlinedTextField(
-                value = uiState.name,
-                onValueChange = viewModel::onNameChange,
-                label = { Text("Medicine name") },
-                isError = uiState.nameError != null,
-                supportingText = uiState.nameError?.let { { Text(it) } },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Name with autocomplete
+            val suggestions by viewModel.nameSuggestions.collectAsStateWithLifecycle()
+
+            ExposedDropdownMenuBox(
+                expanded = suggestions.isNotEmpty(),
+                onExpandedChange = { }
+            ) {
+                OutlinedTextField(
+                    value = uiState.name,
+                    onValueChange = viewModel::onNameChange,
+                    label = { Text("Medicine name") },
+                    isError = uiState.nameError != null,
+                    supportingText = uiState.nameError?.let { { Text(it) } },
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(MenuAnchorType.PrimaryEditable)
+                )
+                if (suggestions.isNotEmpty()) {
+                    ExposedDropdownMenu(
+                        expanded = true,
+                        onDismissRequest = { viewModel.onNameSuggestionSelected(uiState.name) }
+                    ) {
+                        suggestions.forEach { suggestion ->
+                            DropdownMenuItem(
+                                text = { Text(suggestion) },
+                                onClick = { viewModel.onNameSuggestionSelected(suggestion) }
+                            )
+                        }
+                    }
+                }
+            }
 
             // Dosage — amount + unit picker
             Text("Dosage", style = MaterialTheme.typography.titleSmall)

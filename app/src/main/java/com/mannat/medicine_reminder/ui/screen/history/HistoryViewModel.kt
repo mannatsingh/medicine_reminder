@@ -8,6 +8,7 @@ import com.mannat.medicine_reminder.domain.model.DateRange
 import com.mannat.medicine_reminder.domain.model.DayAdherence
 import com.mannat.medicine_reminder.domain.model.Medicine
 import com.mannat.medicine_reminder.domain.repository.DoseLogRepository
+import com.mannat.medicine_reminder.domain.repository.MedicineRepository
 import com.mannat.medicine_reminder.domain.usecase.doselog.GetAdherenceStatsUseCase
 import com.mannat.medicine_reminder.domain.usecase.doselog.GetDoseLogsForDateUseCase
 import com.mannat.medicine_reminder.domain.usecase.medicine.GetAllMedicinesUseCase
@@ -56,7 +57,8 @@ class HistoryViewModel @Inject constructor(
     private val getAllMedicinesUseCase: GetAllMedicinesUseCase,
     private val getAdherenceStatsUseCase: GetAdherenceStatsUseCase,
     private val getDoseLogsForDateUseCase: GetDoseLogsForDateUseCase,
-    private val doseLogRepository: DoseLogRepository
+    private val doseLogRepository: DoseLogRepository,
+    private val medicineRepository: MedicineRepository
 ) : ViewModel() {
 
     private val _filters = MutableStateFlow(HistoryFilters(null, DateRange.LAST_30_DAYS, YearMonth.now()))
@@ -133,6 +135,9 @@ class HistoryViewModel @Inject constructor(
     fun clearHistoryForMedicine(medicineId: Long, medicineName: String) {
         viewModelScope.launch {
             doseLogRepository.clearHistoryForMedicine(medicineId)
+            medicineRepository.permanentlyDeleteMedicine(medicineId)
+            _filters.update { it.copy(medicineId = null) }
+            _dayDetail.value = null to emptyList()
             _events.emit(HistoryEvent.HistoryCleared(medicineName))
         }
     }
