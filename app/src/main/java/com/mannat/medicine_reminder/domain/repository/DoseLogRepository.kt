@@ -16,4 +16,5 @@ interface DoseLogRepository {
         end: LocalDate
     ): Flow<List<DoseLog>>
     fun getAllDoseLogsInRange(start: LocalDate, end: LocalDate): Flow<List<DoseLog>>
+    suspend fun clearHistoryForMedicine(medicineId: Long)
 }

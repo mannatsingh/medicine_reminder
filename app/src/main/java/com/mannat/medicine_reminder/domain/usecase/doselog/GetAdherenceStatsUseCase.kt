@@ -8,6 +8,7 @@ import com.mannat.medicine_reminder.domain.repository.MedicineRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 
 class GetAdherenceStatsUseCase @Inject constructor(
@@ -33,22 +34,31 @@ class GetAdherenceStatsUseCase @Inject constructor(
                 medicines
             }
 
-            // Compute daily breakdown
+            val today = LocalDate.now()
+            // Don't count future days
+            val effectiveEnd = if (endDate.isAfter(today)) today else endDate
+
+            // Compute daily breakdown — only for days that actually had scheduled doses
+            // and only from when each medicine was created
             val dailyBreakdown = mutableListOf<DayAdherence>()
             var date = startDate
-            while (!date.isAfter(endDate)) {
+            while (!date.isAfter(effectiveEnd)) {
                 val dayOfWeek = date.dayOfWeek
 
-                // Count expected doses for this date
-                val scheduledCount = filteredMedicines
-                    .filter { dayOfWeek in it.activeDays }
-                    .sumOf { it.schedules.size }
+                // Only count medicines that existed on this date
+                val activeMedicinesForDay = filteredMedicines.filter { medicine ->
+                    val createdDate = medicine.createdAt
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate()
+                    dayOfWeek in medicine.activeDays && !date.isBefore(createdDate)
+                }
 
-                // Count taken doses for this date
-                val dayLogs = logs.filter { it.date == date }
-                val takenCount = dayLogs.count { it.status == DoseStatus.TAKEN }
+                val scheduledCount = activeMedicinesForDay.sumOf { it.schedules.size }
 
                 if (scheduledCount > 0) {
+                    val dayLogs = logs.filter { it.date == date }
+                    val takenCount = dayLogs.count { it.status == DoseStatus.TAKEN }
+
                     dailyBreakdown.add(
                         DayAdherence(
                             date = date,
@@ -62,16 +72,15 @@ class GetAdherenceStatsUseCase @Inject constructor(
                 date = date.plusDays(1)
             }
 
-            // Compute streaks (consecutive days with 100% adherence, working backward from today)
-            val today = LocalDate.now()
+            // Compute streaks (consecutive days with 100% adherence, working backward)
             var currentStreak = 0
             var longestStreak = 0
             var tempStreak = 0
 
             for (day in dailyBreakdown.sortedByDescending { it.date }) {
-                if (day.scheduledCount > 0 && day.takenCount == day.scheduledCount) {
+                if (day.takenCount == day.scheduledCount) {
                     tempStreak++
-                    if (day.date <= today && currentStreak == tempStreak - 1) {
+                    if (currentStreak == tempStreak - 1) {
                         currentStreak = tempStreak
                     }
                 } else {
@@ -86,12 +95,18 @@ class GetAdherenceStatsUseCase @Inject constructor(
             val totalMissed = logs.count { it.status == DoseStatus.MISSED }
             val totalSkipped = logs.count { it.status == DoseStatus.SKIPPED }
 
+            // Default to 100% when there's no data yet (new user, no doses scheduled yet)
+            val adherencePercentage = when {
+                totalScheduled == 0 -> 100f
+                else -> (totalTaken.toFloat() / totalScheduled) * 100f
+            }
+
             AdherenceStats(
                 totalScheduledDoses = totalScheduled,
                 takenDoses = totalTaken,
                 missedDoses = totalMissed,
                 skippedDoses = totalSkipped,
-                adherencePercentage = if (totalScheduled > 0) (totalTaken.toFloat() / totalScheduled) * 100f else 0f,
+                adherencePercentage = adherencePercentage,
                 currentStreak = currentStreak,
                 longestStreak = longestStreak,
                 dailyBreakdown = dailyBreakdown

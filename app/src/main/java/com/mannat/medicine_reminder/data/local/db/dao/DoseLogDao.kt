@@ -76,4 +76,13 @@ interface DoseLogDao {
         """
     )
     suspend fun countTotalLoggedDoses(medicineId: Long, startDate: String, endDate: String): Int
+
+    @Query(
+        """
+        DELETE FROM dose_logs WHERE scheduleId IN (
+            SELECT s.id FROM schedules s WHERE s.medicineId = :medicineId
+        )
+        """
+    )
+    suspend fun deleteAllLogsForMedicine(medicineId: Long)
 }

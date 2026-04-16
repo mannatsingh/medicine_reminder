@@ -21,7 +21,21 @@ data class DayAdherence(
 )
 
 enum class DateRange(val days: Int, val label: String) {
-    LAST_7_DAYS(7, "7 days"),
-    LAST_30_DAYS(30, "30 days"),
-    LAST_90_DAYS(90, "90 days")
+    LAST_7_DAYS(7, "Week"),
+    LAST_30_DAYS(30, "Month"),
+    LAST_365_DAYS(365, "Year"),
+    ALL_TIME(0, "All Time");
+
+    fun startDate(): LocalDate = when (this) {
+        ALL_TIME -> LocalDate.of(2020, 1, 1)
+        else -> LocalDate.now().minusDays(days.toLong())
+    }
 }
+
+data class MedicineDoseDetail(
+    val scheduleId: Long,
+    val date: LocalDate,
+    val scheduledTime: java.time.LocalTime,
+    val status: DoseStatus?,
+    val takenAt: java.time.Instant?
+)

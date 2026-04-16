@@ -58,4 +58,8 @@ class DoseLogRepositoryImpl @Inject constructor(
             start.toString(), end.toString()
         ).map { list -> list.map { it.toDomain() } }
     }
+
+    override suspend fun clearHistoryForMedicine(medicineId: Long) {
+        doseLogDao.deleteAllLogsForMedicine(medicineId)
+    }
 }
