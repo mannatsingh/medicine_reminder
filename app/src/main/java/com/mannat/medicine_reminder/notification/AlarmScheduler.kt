@@ -83,7 +83,7 @@ class AlarmScheduler @Inject constructor(
         cancelFollowUpAlarm(scheduleId)
     }
 
-    private fun cancelFollowUpAlarm(scheduleId: Long) {
+    fun cancelFollowUpAlarm(scheduleId: Long) {
         val intent = Intent(context, FollowUpAlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             context,

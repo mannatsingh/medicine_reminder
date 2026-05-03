@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
@@ -29,12 +30,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mannat.medicine_reminder.domain.model.DoseStatus
 import com.mannat.medicine_reminder.ui.component.CalendarStrip
 import com.mannat.medicine_reminder.ui.component.DoseCheckItem
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(
@@ -59,7 +62,7 @@ fun HomeScreen(
                         duration = SnackbarDuration.Short
                     )
                     if (result == SnackbarResult.ActionPerformed) {
-                        viewModel.onUndoDose(event.scheduleId)
+                        viewModel.onUndoDose(event.scheduleId, event.date)
                     }
                 }
             }
@@ -74,7 +77,7 @@ fun HomeScreen(
                 modifier = Modifier.padding(vertical = 8.dp)
             )
 
-            // Progress bar
+            // Progress bar — for the selected date (typically today)
             if (!uiState.isLoading && uiState.totalDoses > 0) {
                 val animatedProgress by animateFloatAsState(
                     targetValue = uiState.progress,
@@ -119,7 +122,7 @@ fun HomeScreen(
                 ) {
                     CircularProgressIndicator()
                 }
-            } else if (uiState.doseItems.isEmpty()) {
+            } else if (uiState.sections.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -143,40 +146,76 @@ fun HomeScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    uiState.groupedItems.forEach { (timeOfDay, items) ->
-                        item {
-                            Text(
-                                text = timeOfDay.label,
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-                            )
-                        }
-                        items(
-                            items = items,
-                            key = { it.scheduleId }
-                        ) { doseItem ->
-                            DoseCheckItem(
-                                item = doseItem,
-                                selectedDate = uiState.selectedDate,
-                                onToggle = {
-                                    viewModel.onToggleDose(
-                                        doseItem.scheduleId,
-                                        doseItem.medicineName,
-                                        doseItem.status
+                    uiState.sections.forEachIndexed { index, section ->
+                        // Day section header
+                        item(key = "header-${section.date}") {
+                            Column(modifier = Modifier.padding(top = if (index == 0) 0.dp else 16.dp)) {
+                                if (index > 0) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(bottom = 12.dp),
+                                        color = MaterialTheme.colorScheme.outlineVariant
                                     )
-                                },
-                                onSkip = {
-                                    if (doseItem.status == DoseStatus.SKIPPED) {
-                                        viewModel.onUndoDose(doseItem.scheduleId)
-                                    } else {
-                                        viewModel.onSkipDose(
-                                            doseItem.scheduleId,
-                                            doseItem.medicineName
-                                        )
-                                    }
                                 }
-                            )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.Bottom
+                                ) {
+                                    Text(
+                                        text = section.label,
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = section.date.format(
+                                            DateTimeFormatter.ofPattern("EEE, MMM d")
+                                        ),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+
+                        // Time-of-day groups within each day
+                        section.groupedByTime.forEach { (timeOfDay, items) ->
+                            item(key = "time-${section.date}-${timeOfDay.name}") {
+                                Text(
+                                    text = timeOfDay.label,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
+                                )
+                            }
+                            items(
+                                items = items,
+                                key = { "${section.date}-${it.scheduleId}" }
+                            ) { doseItem ->
+                                DoseCheckItem(
+                                    item = doseItem,
+                                    selectedDate = section.date,
+                                    onToggle = {
+                                        viewModel.onToggleDose(
+                                            doseItem.scheduleId,
+                                            doseItem.medicineName,
+                                            section.date,
+                                            doseItem.status
+                                        )
+                                    },
+                                    onSkip = {
+                                        if (doseItem.status == DoseStatus.SKIPPED) {
+                                            viewModel.onUndoDose(doseItem.scheduleId, section.date)
+                                        } else {
+                                            viewModel.onSkipDose(
+                                                doseItem.scheduleId,
+                                                doseItem.medicineName,
+                                                section.date
+                                            )
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
                     item { Spacer(modifier = Modifier.height(80.dp)) }

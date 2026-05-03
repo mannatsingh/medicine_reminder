@@ -51,6 +51,8 @@ fun MedicinesScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var medicineToDelete by remember { mutableStateOf<Medicine?>(null) }
+    var deleteStep by remember { mutableStateOf(0) }
+    var typedConfirmation by remember { mutableStateOf("") }
 
     if (uiState.isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -124,29 +126,80 @@ fun MedicinesScreen(
             MedicineCard(
                 medicine = medicine,
                 onEdit = { onEditMedicine(medicine.id) },
-                onDelete = { medicineToDelete = medicine }
+                onDelete = {
+                    medicineToDelete = medicine
+                    deleteStep = 1
+                    typedConfirmation = ""
+                }
             )
         }
 
         item { Spacer(modifier = Modifier.height(80.dp)) }
     }
 
-    // Delete confirmation dialog
-    medicineToDelete?.let { medicine ->
+    // Step 1: Are you sure?
+    if (deleteStep == 1 && medicineToDelete != null) {
         AlertDialog(
-            onDismissRequest = { medicineToDelete = null },
-            title = { Text("Delete ${medicine.name}?") },
+            onDismissRequest = {
+                deleteStep = 0
+                medicineToDelete = null
+            },
+            title = { Text("Delete ${medicineToDelete!!.name}?") },
             text = { Text("This will remove the medicine and stop its reminders. History data will be preserved.") },
             confirmButton = {
+                TextButton(onClick = { deleteStep = 2 }) {
+                    Text("Continue", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
                 TextButton(onClick = {
-                    viewModel.onDeleteMedicine(medicine.id)
+                    deleteStep = 0
                     medicineToDelete = null
                 }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    // Step 2: Type "yes" to confirm
+    if (deleteStep == 2 && medicineToDelete != null) {
+        AlertDialog(
+            onDismissRequest = {
+                deleteStep = 0
+                medicineToDelete = null
+            },
+            title = { Text("Confirm deletion") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Type \"yes\" to confirm deleting ${medicineToDelete!!.name}.")
+                    OutlinedTextField(
+                        value = typedConfirmation,
+                        onValueChange = { typedConfirmation = it },
+                        label = { Text("Type yes") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.onDeleteMedicine(medicineToDelete!!.id)
+                        deleteStep = 0
+                        medicineToDelete = null
+                        typedConfirmation = ""
+                    },
+                    enabled = typedConfirmation.trim().equals("yes", ignoreCase = true)
+                ) {
                     Text("Delete", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { medicineToDelete = null }) {
+                TextButton(onClick = {
+                    deleteStep = 0
+                    medicineToDelete = null
+                }) {
                     Text("Cancel")
                 }
             }

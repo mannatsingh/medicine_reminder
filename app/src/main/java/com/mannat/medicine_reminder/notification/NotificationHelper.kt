@@ -76,8 +76,9 @@ class NotificationHelper @Inject constructor(
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setOngoing(true)
+            .setOngoing(false)
             .setAutoCancel(false)
+            .setTimeoutAfter(0)
             .setContentIntent(contentPendingIntent)
             .addAction(0, "Taken", takenPendingIntent)
             .build()
@@ -96,6 +97,9 @@ class NotificationHelper @Inject constructor(
         dosage: String,
         notificationId: Int
     ) {
+        // Cancel the original dose reminder — we're replacing it with this follow-up
+        NotificationManagerCompat.from(context).cancel(scheduleId.toInt())
+
         val contentIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
@@ -120,8 +124,9 @@ class NotificationHelper @Inject constructor(
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setOngoing(true)
+            .setOngoing(false)
             .setAutoCancel(false)
+            .setTimeoutAfter(0)
             .setContentIntent(contentPendingIntent)
             .addAction(0, "Taken", takenPendingIntent)
             .build()
